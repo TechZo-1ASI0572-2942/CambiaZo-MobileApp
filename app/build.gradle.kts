@@ -45,7 +45,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.11"
     }
     packaging {
         resources {
@@ -66,8 +66,11 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.glide)
     implementation (libs.accompanist.swiperefresh)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.firebase.appcheck.debug)
     annotationProcessor(libs.room.compiler)
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
+
 
     // Firebase and Google Auth
     implementation(platform("com.google.firebase:firebase-bom:33.5.1"))
@@ -96,6 +99,8 @@ dependencies {
     // Retrofit
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
+    implementation ("com.google.maps.android:maps-compose:2.11.2")
+    implementation ("com.google.android.gms:play-services-maps:18.1.0")
 
     // Coroutines, icons, and Coil
     implementation(libs.coroutines)
@@ -109,6 +114,8 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.9.3")
     implementation("org.json:json:20211205")
 
+    implementation ("androidx.compose.animation:animation:<compose_version>")
+    implementation ("androidx.compose.animation:animation-core:<compose_version>")
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -121,4 +128,12 @@ dependencies {
     kapt(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.datastore.preferences)
+    implementation ("androidx.core:core-splashscreen:1.0.1")
+    implementation("com.google.firebase:firebase-appcheck-debug:17.1.1")
+    implementation("com.google.android.play:integrity:1.3.0")
+
+    //Paypal
+    implementation ("com.paypal.android:paypal-web-payments:1.5.0")
+    implementation("com.google.firebase:firebase-appcheck-debug:17.1.1")
+
 }

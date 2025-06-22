@@ -18,8 +18,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
@@ -53,6 +55,7 @@ import com.techzo.cambiazo.common.components.DialogApp
 import com.techzo.cambiazo.common.components.MainScaffoldApp
 import com.techzo.cambiazo.presentation.exchanges.ExchangeViewModel
 import com.techzo.cambiazo.presentation.explorer.review.ReviewViewModel
+import com.techzo.cambiazo.ui.theme.ScreenBackground
 
 @Composable
 fun ExchangeDetailsScreen(
@@ -196,7 +199,10 @@ fun ExchangeDetailsScreen(
             val authorId= if(boolean) exchange.userOwn.id else exchange.userChange.id
             val receptorId = if(!boolean) exchange.userChange.id else exchange.userOwn.id
 
-            Column {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+            ){
                 Column(modifier = Modifier.padding(start = 15.dp, end = 15.dp)) {
                     val userId = if (!boolean) exchange.userOwn.id else exchange.userChange.id
                     Row(
@@ -295,6 +301,7 @@ fun ExchangeDetailsScreen(
                                 )
                             }
                             Text(text = description, fontSize = 16.sp, lineHeight = 20.sp)
+                            LockerInfoSection()
                         }
                     }
 
@@ -314,6 +321,66 @@ fun ExchangeDetailsScreen(
 
                 }
             }
+        }
+    }
+}
+
+
+@Composable
+fun LockerInfoSection(
+    sede: String = "Sede Lima - Av. Principal 123",
+    lockerCode: String = "A10",
+    pin: String = "4342",
+    status: String = "Esperando depósito del objeto en locker"
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 18.dp, horizontal = 10.dp)
+            .border(1.dp, Color(0xFFDCDCDC), RoundedCornerShape(12.dp))
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("Locker No.", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(lockerCode, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = ScreenBackground)
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("MAPA", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(sede, fontSize = 12.sp, textAlign = TextAlign.Center)
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("PIN de apertura", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                Text(pin, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = ScreenBackground)
+            }
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.Black, RoundedCornerShape(50))
+                .padding(vertical = 8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(status, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Text("Instrucciones", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+        Spacer(modifier = Modifier.height(4.dp))
+        val instrucciones = listOf(
+            "Acercate al locker asignado",
+            "Ingresa el PIN en el panel del locker",
+            "El locker se abrirá automáticamente",
+            "Coloca el objeto y cierra bien la puerta",
+            "Toma una foto del objeto dentro del locker",
+            "Regresa a la app y pulsa “Ya dejé el objeto”"
+        )
+        instrucciones.forEachIndexed { i, instr ->
+            Text("${i + 1}. $instr", fontSize = 13.sp, lineHeight = 18.sp)
         }
     }
 }
