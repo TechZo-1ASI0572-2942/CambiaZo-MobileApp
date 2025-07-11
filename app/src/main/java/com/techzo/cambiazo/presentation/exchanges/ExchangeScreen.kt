@@ -135,7 +135,7 @@ fun ExchangeScreen(
 
 @Composable
 fun ExchangeBox(exchange: Exchange, page: Int, goToDetailsScreen: (String, String) -> Unit, goToReviewScreen: (Int) -> Unit) {
-    val boolean = exchange.userOwn.id == Constants.user?.id
+    val boolean = true
 
     val textUpperImage = when (page) {
         0 -> "Quieres"
@@ -149,17 +149,9 @@ fun ExchangeBox(exchange: Exchange, page: Int, goToDetailsScreen: (String, Strin
         else -> "Obtuviste"
     }
 
-    val upperUserProfileImage= when (page) {
-        0 -> exchange.userChange.profilePicture
-        1 -> exchange.userOwn.profilePicture
-        else -> if(boolean) exchange.userChange.profilePicture else exchange.userOwn.profilePicture
-    }
+    val upperUserProfileImage= exchange.userChange.profilePicture
 
-    val upperUserName= when (page) {
-        0 -> exchange.userChange.name
-        1 -> exchange.userOwn.name
-        else -> if(boolean) exchange.userChange.name else exchange.userOwn.name
-    }
+    val upperUserName= exchange.userChange.name
 
     val statusText = {
         if (page == 0 && exchange.status == "Pendiente") "Enviado"
@@ -179,41 +171,17 @@ fun ExchangeBox(exchange: Exchange, page: Int, goToDetailsScreen: (String, Strin
         else Color(0xFF38B000)
     }
 
-    val userId = when (page) {
-        0 -> exchange.userChange.id
-        1 -> exchange.userOwn.id
-        else -> if (boolean) exchange.userChange.id else exchange.userOwn.id
-    }
+    val userId = exchange.userOwn.id
 
-    val firstProductImage= when (page) {
-        0 -> exchange.productChange.image
-        1 -> exchange.productChange.image
-        else -> if(boolean) exchange.productOwn.image else exchange.productChange.image
-    }
+    val firstProductImage= exchange.productOwn.image
 
-    val secondProductImage= when (page) {
-        0 -> exchange.productOwn.image
-        1 -> exchange.productOwn.image
-        else -> if(boolean) exchange.productChange.image else exchange.productOwn.image
-    }
+    val secondProductImage= exchange.productChange.image
 
-    val firstProductName= when (page) {
-        0 -> exchange.productChange.name
-        1 -> exchange.productChange.name
-        else -> if(boolean) exchange.productOwn.name else exchange.productChange.name
-    }
+    val firstProductName= exchange.productOwn.name
 
-    val secondProductName= when (page) {
-        0 -> exchange.productOwn.name
-        1 -> exchange.productOwn.name
-        else -> if(boolean) exchange.productChange.name else exchange.productOwn.name
-    }
+    val secondProductName= exchange.productChange.name
 
-    val phoneNumber= when (page) {
-        0 -> exchange.userChange.phoneNumber
-        1 -> exchange.userOwn.phoneNumber
-        else -> if(boolean) exchange.userChange.phoneNumber else exchange.userOwn.phoneNumber
-    }
+    val phoneNumber= exchange.userChange.phoneNumber
 
 
 

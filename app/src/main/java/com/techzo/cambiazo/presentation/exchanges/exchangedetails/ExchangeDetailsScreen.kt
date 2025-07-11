@@ -3,6 +3,8 @@ package com.techzo.cambiazo.presentation.exchanges.exchangedetails
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,8 +15,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -24,14 +28,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,21 +53,30 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.rememberAsyncImagePainter
 import com.skydoves.landscapist.glide.GlideImage
+import com.techzo.cambiazo.R
 import com.techzo.cambiazo.common.Constants
+import com.techzo.cambiazo.common.components.ButtonApp
 import com.techzo.cambiazo.common.components.DialogApp
 import com.techzo.cambiazo.common.components.MainScaffoldApp
+import com.techzo.cambiazo.domain.Exchange
+import com.techzo.cambiazo.domain.ExchangeLocker
 import com.techzo.cambiazo.presentation.exchanges.ExchangeViewModel
 import com.techzo.cambiazo.presentation.explorer.review.ReviewViewModel
 import com.techzo.cambiazo.ui.theme.ScreenBackground
+
 
 @Composable
 fun ExchangeDetailsScreen(
@@ -68,7 +89,10 @@ fun ExchangeDetailsScreen(
 
     LaunchedEffect(Unit) {
         viewModel.getExchangeById(exchangeId)
+        viewModel.getExchangeLocker(exchangeId)
     }
+
+    var showDialog by remember { mutableStateOf(false) }
 
     val exchange = viewModel.exchange.value
     val boolean = exchange.data?.userOwn?.id == Constants.user?.id
@@ -301,7 +325,13 @@ fun ExchangeDetailsScreen(
                                 )
                             }
                             Text(text = description, fontSize = 16.sp, lineHeight = 20.sp)
-                            LockerInfoSection()
+
+                            MyPopupDialog(
+                                showDialog = showDialog,
+                                onDismiss = { showDialog = false },
+                                locker = viewModel.exchangeLocker.value.data,
+                                exchange = exchange
+                            )
                         }
                     }
 
@@ -318,7 +348,11 @@ fun ExchangeDetailsScreen(
 
                 Column(modifier = Modifier.padding(start = 15.dp, end = 15.dp)) {
                     BoxUnderExchange(textUnderImage2,productImage2, productName2, price2.toString(), page, exchangeId = exchange.id, goBack = {goBack(page)}, userAuthor = authorId, userReceptor = receptorId)
-
+                    ButtonApp(
+                        text = "Ver Locker",
+                        onClick = {showDialog = true },
+                    )
+                    Spacer(modifier = Modifier.height(15.dp))
                 }
             }
         }
@@ -327,63 +361,273 @@ fun ExchangeDetailsScreen(
 
 
 @Composable
-fun LockerInfoSection(
-    sede: String = "Sede Lima - Av. Principal 123",
-    lockerCode: String = "A10",
-    pin: String = "4342",
-    status: String = "Esperando depósito del objeto en locker"
+fun MyPopupDialog(
+    showDialog: Boolean,
+    onDismiss: () -> Unit,
+    locker: ExchangeLocker?,
+    exchange: Exchange
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 18.dp, horizontal = 10.dp)
-            .border(1.dp, Color(0xFFDCDCDC), RoundedCornerShape(12.dp))
-            .padding(16.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Locker No.", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                Text(lockerCode, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = ScreenBackground)
+    var selectedTab by remember { mutableStateOf("envio") }
+
+    if (showDialog) {
+        Dialog(onDismissRequest = onDismiss) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(1f)
+                    .heightIn(max = 500.dp)
+                    .background(Color.White, RoundedCornerShape(16.dp))
+                    .padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    LockerInfoSection(
+                        locker = locker,
+                        exchange = exchange,
+                        selectedTab = selectedTab,
+                        onTabSelected = { selectedTab = it }
+                    )
+                }
             }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("MAPA", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                Text(sede, fontSize = 12.sp, textAlign = TextAlign.Center)
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("PIN de apertura", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                Text(pin, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold, color = ScreenBackground)
-            }
-        }
-        Spacer(modifier = Modifier.height(10.dp))
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.Black, RoundedCornerShape(50))
-                .padding(vertical = 8.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(status, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        Text("Instrucciones", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-        Spacer(modifier = Modifier.height(4.dp))
-        val instrucciones = listOf(
-            "Acercate al locker asignado",
-            "Ingresa el PIN en el panel del locker",
-            "El locker se abrirá automáticamente",
-            "Coloca el objeto y cierra bien la puerta",
-            "Toma una foto del objeto dentro del locker",
-            "Regresa a la app y pulsa “Ya dejé el objeto”"
-        )
-        instrucciones.forEachIndexed { i, instr ->
-            Text("${i + 1}. $instr", fontSize = 13.sp, lineHeight = 18.sp)
         }
     }
 }
+
+@Composable
+fun LockerInfoSection(
+    locker: ExchangeLocker?,
+    exchange: Exchange,
+    selectedTab: String,
+    onTabSelected: (String) -> Unit
+) {
+    val tabs = listOf("envio", "recoger")
+    val tabTitles = listOf("Locker de envío", "Locker de retiro")
+    val selectedIndex = tabs.indexOf(selectedTab)
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        ScrollableTabRow (
+            selectedTabIndex = selectedIndex,
+            containerColor = Color.Transparent, // fondo exterior transparente
+            edgePadding = 0.dp,
+            indicator = { tabPositions ->
+                Box(
+                    Modifier
+                        .tabIndicatorOffset(tabPositions[selectedIndex])
+                        .height(36.dp)
+                        .padding(horizontal = 4.dp)
+                        .background(
+                            color = Color(0xFFFFD146), // tu color principal
+                            shape = RoundedCornerShape(50)
+                        )
+                )
+            },
+            divider = {} // quita la línea de abajo
+        ) {
+            tabs.forEachIndexed { index, tab ->
+                Tab(
+                    selected = selectedTab == tab,
+                    onClick = { onTabSelected(tab) },
+                    selectedContentColor = Color.Black,
+                    unselectedContentColor = Color.Black
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = tabTitles[index],
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        if (selectedTab == "envio") {
+            LockerEnvioSection(locker, exchange)
+        } else {
+            LockerRecogerSection(locker, exchange)
+        }
+    }
+}
+
+
+@Composable
+fun LockerEnvioSection(locker: ExchangeLocker?, exchange: Exchange) {
+    Column {
+        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+            LockerInfoItem(title = "Locker No.", value = locker?.lockerDepositId?.toString() ?: "--")
+            LockerInfoItem(
+                title = "PIN de apertura",
+                value = if (locker?.stateExchangeLockerDeposit == "EMPTY") locker.pinDeposit ?: "--" else "----"
+            )
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        InstructionsEnvio()
+
+        Spacer(Modifier.height(16.dp))
+
+        // Imagen y estado
+        if (locker?.stateExchangeLockerDeposit == "EMPTY") {
+            LockerImageWithOut(
+                imageUrl = null ,
+                statusText = "Esperando el deposito del objeto en el locker"
+            )
+        } else if (locker?.stateExchangeLockerDeposit == "FULL" && exchange != null) {
+            LockerImageWithIn(
+                imageUrl = exchange.productChange.image ,
+                statusText = "Evidencia confirmada del deposito"
+            )
+        }
+    }
+}
+
+@Composable
+fun TabButton(text: String, isSelected: Boolean, onClick: () -> Unit) {
+    Button(
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (isSelected) Color.Gray else Color.LightGray
+        )
+    ) {
+        Text(text)
+    }
+}
+
+@Composable
+fun LockerRecogerSection(locker: ExchangeLocker?, exchange: Exchange) {
+    Column {
+        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
+            LockerInfoItem(title = "Locker No.", value = locker?.lockerRetrieveId?.toString() ?: "--")
+            LockerInfoItem(
+                title = "PIN de apertura",
+                value = if (locker?.stateExchangeLockerDeposit == "FULL") locker.pinRetrieve ?: "--" else "----"
+            )
+        }
+
+        Spacer(Modifier.height(16.dp))
+
+        InstructionsRecoger()
+
+        Spacer(Modifier.height(16.dp))
+
+        if (locker?.stateExchangeLockerRetrieve == "EMPTY") {
+            LockerImageWithOut(
+                imageUrl = null,
+                statusText = "Esperando el deposito del objeto en el locker"
+            )
+        } else if (locker?.stateExchangeLockerRetrieve == "FULL" && exchange != null) {
+            LockerImageWithIn(
+                imageUrl = exchange.productOwn.image,
+                statusText = "Objeto depositado, recógelo"
+            )
+        }
+    }
+}
+
+@Composable
+fun LockerInfoItem(title: String, value: String) {
+    Column {
+        Text(title, fontSize = 12.sp, color = Color.Gray)
+        Text(value, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+fun InstructionsEnvio() {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.clickable { expanded = !expanded }
+        ) {
+            Text("Instrucciones", fontWeight = FontWeight.Bold)
+            Icon(
+                imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                contentDescription = null
+            )
+        }
+
+        AnimatedVisibility (visible = expanded) {
+            Column {
+                Text("1. Acércate al locker asignado")
+                Text("2. Ingresa el PIN en el panel del locker.")
+                Text("3. El locker se abrirá automáticamente.")
+                Text("4. Coloca el objeto y cierra bien la puerta.")
+                Text("5. Toma una foto del objeto dentro del locker")
+                Text("6. Regresa a la app y pulsa “Ya dejé el objeto”")
+            }
+        }
+    }
+}
+
+
+@Composable
+fun InstructionsRecoger() {
+    var expanded by remember { mutableStateOf(false) }
+
+    Column {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.clickable { expanded = !expanded }
+        ) {
+            Text("Instrucciones", fontWeight = FontWeight.Bold)
+            Icon(
+                imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                contentDescription = null
+            )
+        }
+
+        AnimatedVisibility (visible = expanded) {
+            Column {
+                Text("1. Espera la confirmación del objeto")
+                Text("2. Se te enviará un pin de apertura.")
+                Text("3. Ve al locker indicado.")
+                Text("4. Ingresa el pin asignado.")
+                Text("5. El locker se abrirá automáticamente.")
+                Text("6. Recoge tu objeto y cierra el locker")
+            }
+        }
+    }
+
+}
+
+@Composable
+fun LockerImageWithOut(imageUrl: String?, statusText: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Image(
+            painter = painterResource(id = R.drawable.waiting_package),
+            contentDescription = "Locker icon",
+            modifier = Modifier.fillMaxWidth()
+                .height(150.dp)
+                .padding(10.dp),
+        )
+
+        Text(statusText)
+    }
+}
+@Composable
+fun LockerImageWithIn(imageUrl: String?, statusText: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            GlideImage(
+                imageModel = { imageUrl },
+                modifier = Modifier.fillMaxWidth()
+                    .height(150.dp)
+                    .padding(10.dp),
+            )
+           Text(statusText)
+    }
+}
+
+
+
 
 @Composable
 fun BoxUnderExchange(textUnderImage:String, image:String, productName: String, price: String, page: Int, viewModel: ExchangeViewModel = hiltViewModel(), reviewViewModel: ReviewViewModel = hiltViewModel(), exchangeId: Int, goBack: () -> Unit, userAuthor:Int, userReceptor: Int) {
@@ -473,12 +717,6 @@ fun BoxUnderExchange(textUnderImage:String, image:String, productName: String, p
             }
         }
 
-
-
-
-
-
-
     }
     if(page == 1){
         Box(
@@ -507,145 +745,9 @@ fun BoxUnderExchange(textUnderImage:String, image:String, productName: String, p
                         Text("S/${price} valor aprox.", textAlign = TextAlign.Center, fontSize = 16.sp, color = Color(0xFFFFD146), fontWeight = FontWeight.Bold)
                     }
                 }
-                Row(modifier = Modifier.fillMaxWidth().padding(top = 5.dp)){
-                    Button(onClick = {
-                        showDialog=true
-                        viewModel.updateExchangeStatus(exchangeId,"Aceptado")
-                    },
-                        modifier = Modifier.weight(0.5f)
-                            .height(40.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFFFD146),
-                            contentColor = Color.Black
-                        ),
-                        shape = RoundedCornerShape(10.dp))
-                    {
-                        Text(text = "Aceptar",
-                            fontSize = 16.sp,
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.SansSerif)
-                        )
-                    }
-                    if(showDialog){
-                        DialogApp(
-                            message = "¡Intercambio Aceptado!",
-                            description = "¡Felicidades por completar tu CambiaZo! Ahora puedes comunicarte con el otro usuario para concretar el intercambio.",
-                            labelButton1 = "Aceptar",
-                            onClickButton1 = { viewModel.getExchangesByUserChangeId(); showDialog = false; goBack() }
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Button(onClick = {
-                        showDialog2=true
-                    },
-                        modifier = Modifier.weight(0.5f).border(1.dp, Color.Red, RoundedCornerShape(10.dp))
-                            .height(40.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.White,
-                            contentColor = Color.Red,
-                        ),
-                        shape = RoundedCornerShape(10.dp))
-                    {
-                        Text(text = "Rechazar",
-                            fontSize = 16.sp,
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontFamily = FontFamily.SansSerif)
-                        )
-                    }
-                    if(showDialog2){
-                        DialogApp(
-                            message = "¿Estás seguro de deseas rechazar la oferta?",
-                            description = "Si rechazas la oferta, no podrás volver a verla. ¿Quieres continuar?",
-                            labelButton1 = "Rechazar Oferta",
-                            labelButton2 = "Cancelar",
-                            onClickButton1 = { viewModel.updateExchangeStatus(exchangeId, "Rechazado"); viewModel.getExchangesByUserChangeId(); showDialog2 = false; goBack() },
-                            onClickButton2 = { showDialog2 = false; }
-                        )
-                    }
-                }
+                Spacer(modifier = Modifier.width(10.dp).height(20.dp))
             }
         }
     }
-    if(page == 2){
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp)
-                .padding(bottom = 20.dp)
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                Text(textUnderImage, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color(0xFF6D6D6D))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    GlideImage(
-                        imageModel = { image },
-                        modifier = Modifier
-                            .fillMaxWidth(0.45f)
-                            .height(140.dp)
-                            .border(0.2.dp, Color(0xFFDCDCDC), RoundedCornerShape(10.dp))
-                            .clip(RoundedCornerShape(10.dp))
-                    )
-                    Spacer(modifier = Modifier.width(5.dp))
-                    Column(
-                        modifier = Modifier.padding(5.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            productName,
-                            textAlign = TextAlign.Center,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp
-                        )
-                        Text(
-                            "S/${price} valor aprox.",
-                            textAlign = TextAlign.Center,
-                            fontSize = 16.sp,
-                            color = Color(0xFFFFD146),
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(10.dp))
-                        if(!viewModel.existReview.value){
-                            Button(onClick = {
-                                showDialog3=true
-                            },
-                                modifier = Modifier.fillMaxWidth()
-                                    .height(40.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFFFFD146),
-                                    contentColor = Color.Black
-                                ),
-                                shape = RoundedCornerShape(10.dp))
-                            {
-                                Text(text = "Dejar Reseña",
-                                    fontSize = 16.sp,
-                                    style = MaterialTheme.typography.bodyLarge.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        fontFamily = FontFamily.SansSerif)
-                                )
-                            }
-                            if(showDialog3){
-                                DialogApp(
-                                    message = "Deja tu Reseña",
-                                    isNewReview = true,
-                                    labelButton1 = "Enviar",
-                                    labelButton2 = "Cancelar",
-                                    onClickButton1 = { showDialog3=false},
-                                    onClickButton2 = {showDialog3=false},
-                                    onSubmitReview = { newRating, newReview ->
-                                        reviewViewModel.addReview(newReview,newRating,"Enviado",userAuthor, userReceptor, exchangeId)
-                                        showDialog3 = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+
 }

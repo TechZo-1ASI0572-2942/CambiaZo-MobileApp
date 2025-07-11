@@ -10,12 +10,14 @@ import androidx.lifecycle.viewModelScope
 import com.techzo.cambiazo.common.Constants
 import com.techzo.cambiazo.common.Resource
 import com.techzo.cambiazo.common.UIState
+import com.techzo.cambiazo.data.repository.ExchangeLockerRepository
 import com.techzo.cambiazo.data.repository.ExchangeRepository
 import com.techzo.cambiazo.data.repository.LocationRepository
 import com.techzo.cambiazo.data.repository.ReviewRepository
 import com.techzo.cambiazo.domain.Department
 import com.techzo.cambiazo.domain.District
 import com.techzo.cambiazo.domain.Exchange
+import com.techzo.cambiazo.domain.ExchangeLocker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,7 +27,8 @@ import javax.inject.Inject
 @HiltViewModel
 class ExchangeViewModel @Inject constructor(private val exchangeRepository: ExchangeRepository,
     private val locationRepository: LocationRepository,
-    private val reviewRepository: ReviewRepository
+    private val reviewRepository: ReviewRepository,
+    private val exchangeLockerRepository: ExchangeLockerRepository,
 ) : ViewModel() {
 
     private val _exchangesSend = mutableStateOf(UIState<List<Exchange>>())
@@ -53,15 +56,19 @@ class ExchangeViewModel @Inject constructor(private val exchangeRepository: Exch
     private val _existReview= mutableStateOf(false)
     val existReview: State<Boolean> get() = _existReview
 
+    private val _exchangeLocker = mutableStateOf(UIState<ExchangeLocker>())
+    val exchangeLocker: State<UIState<ExchangeLocker>> get() = _exchangeLocker
+    //val exchangeLocker: State<UIState<Exchange>> get() = _exchangeLocker
+    //val to open and close the dialog
+
 
     init{
-
         getLocations()
     }
 
     fun fetchExchanges(page:Int){
         when(page){
-            0 -> getExchangesByUserOwnId()
+            0 -> getAllExchanges()
             2 -> getFinishedExchanges()
         }
     }
@@ -73,6 +80,18 @@ class ExchangeViewModel @Inject constructor(private val exchangeRepository: Exch
         }
     }
 
+    fun getExchangeLocker(exchangeId: Int) {
+        _exchangeLocker.value = UIState(isLoading = true)
+        viewModelScope.launch {
+            val result = exchangeLockerRepository.getExchangeLockerByExchangeIdAndUserId(exchangeId, Constants.user!!.id)
+            if (result is Resource.Success) {
+                _exchangeLocker.value = UIState(data = result.data)
+            } else {
+                _exchangeLocker.value = UIState(message = result.message ?: "Ocurrió un error")
+            }
+        }
+    }
+
     fun getAllExchanges() {
         _state.value = UIState(isLoading = true)
         viewModelScope.launch {
@@ -81,7 +100,7 @@ class ExchangeViewModel @Inject constructor(private val exchangeRepository: Exch
                 val filteredData = result.data?.filter { exchange ->
                     exchange.status == "Aceptado" && (exchange.userOwn.id == Constants.user!!.id || exchange.userChange.id == Constants.user!!.id)
                 }?.map { exchange ->
-                    if (exchange.userOwn.id == Constants.user!!.id) {
+                    if (exchange.userChange.id == Constants.user!!.id) {
                         exchange.copy(
                             productOwn = exchange.productChange,
                             productChange = exchange.productOwn,
@@ -93,7 +112,8 @@ class ExchangeViewModel @Inject constructor(private val exchangeRepository: Exch
                     }
                 }
 
-
+                //print
+                Log.d("ExchangeViewModel", "getAllExchanges: ${filteredData} exchanges found")
                 _state.value = UIState(data = filteredData)
             } else {
                 _state.value = UIState(message = result.message ?: "Ocurrió un error")
@@ -139,9 +159,25 @@ class ExchangeViewModel @Inject constructor(private val exchangeRepository: Exch
         _state.value = UIState(isLoading = true)
         viewModelScope.launch {
             val result = exchangeRepository.getFinishedExchanges(Constants.user!!.id)
+
+
             if(result is Resource.Success){
-                _finishedExchanges.value = UIState(data = result.data)
-                _state.value = UIState(data = result.data)
+
+                val filteredData = result.data?.map { exchange ->
+                    if (exchange.userChange.id == Constants.user!!.id) {
+                        exchange.copy(
+                            productOwn = exchange.productChange,
+                            productChange = exchange.productOwn,
+                            userOwn = exchange.userChange,
+                            userChange = exchange.userOwn
+                        )
+                    } else {
+                        exchange
+                    }
+                }
+                _finishedExchanges.value = UIState(data = filteredData)
+
+                _state.value = UIState(data = filteredData)
             }else{
                 _state.value = UIState(message = result.message?:"Ocurrió un error")
             }
