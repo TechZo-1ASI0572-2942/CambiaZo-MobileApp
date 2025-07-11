@@ -5,6 +5,7 @@ import com.techzo.cambiazo.data.repository.ProductRepository
 import com.techzo.cambiazo.data.repository.UserRepository
 import com.techzo.cambiazo.domain.Exchange
 import com.techzo.cambiazo.domain.ExchangeProduct
+import com.techzo.cambiazo.domain.LocationLocker
 import com.techzo.cambiazo.domain.User
 
 data class ExchangeDto(
@@ -25,7 +26,9 @@ data class ExchangeDto(
     @SerializedName("createdAt")
     val createdAt: String,
     @SerializedName("updatedAt")
-    val updatedAt: String
+    val updatedAt: String,
+    @SerializedName("location")
+    val location: LocationLocker?,
 
 )
 
@@ -39,6 +42,7 @@ fun ExchangeDto.toExchange(): Exchange {
         status = status,
         exchangeDate = exchangeDate,
         createdAt = createdAt,
-        updatedAt = updatedAt
+        updatedAt = updatedAt,
+        location = location
     )
 }

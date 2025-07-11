@@ -9,5 +9,6 @@ data class Exchange(
     val status: String,
     val exchangeDate: String?,
     val createdAt: String,
-    val updatedAt: String
+    val updatedAt: String,
+    val location: LocationLocker?
 )

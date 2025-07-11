@@ -22,6 +22,7 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Diamond
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Handshake
 import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Password
 import androidx.compose.material.icons.outlined.Settings
@@ -56,6 +57,7 @@ fun ProfileScreen(
     openMyReviews: () -> Unit = {},
     openEditProfile: () -> Unit = {},
     openConfiguration: () -> Unit = {},
+    openOffers: () -> Unit = {},
     openFavorites: () -> Unit = {},
     bottomBar: Pair<@Composable () -> Unit, () -> Unit>,
     openSubscription: () -> Unit = {},
@@ -174,6 +176,12 @@ fun ProfileScreen(
                     }
 
                     HorizontalDivider(color = Color(0xFFF2F2F2), thickness = 2.dp, modifier = Modifier.padding(vertical = 12.dp))
+
+                    ProfileOption(
+                        icon = Icons.Outlined.Handshake,
+                        text = "Ofertas",
+                        onClick = { openOffers() }
+                    )
 
                     ProfileOption(
                         icon = Icons.Outlined.FavoriteBorder,

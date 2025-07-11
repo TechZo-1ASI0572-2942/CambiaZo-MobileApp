@@ -56,7 +56,8 @@ class ConfirmationOfferViewModel @Inject constructor(
             val newExchangeRequest = ExchangeRequestDto(
                 productOwnId = offeredProduct!!.id,
                 productChangeId = desiredProduct!!.id,
-                status = "Pendiente"
+                status = "Pendiente",
+                locationId = 1 // Assuming a default location ID, replace with actual logic if needed
             )
 
             val result = exchangeRepository.createExchange(newExchangeRequest)

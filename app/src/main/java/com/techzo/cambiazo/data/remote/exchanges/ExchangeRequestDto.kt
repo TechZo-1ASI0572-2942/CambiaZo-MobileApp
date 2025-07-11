@@ -10,13 +10,17 @@ data class ExchangeRequestDto(
     val productChangeId: Int,
 
     @SerializedName("status")
-    val status: String
+    val status: String,
+
+    @SerializedName("locationId")
+    val locationId: Int
 )
 
 fun ExchangeRequestDto.toExchangeRequestDto(): ExchangeRequestDto {
     return ExchangeRequestDto(
         productOwnId = productOwnId,
         productChangeId = productChangeId,
-        status = status
+        status = status,
+        locationId = locationId
     )
 }

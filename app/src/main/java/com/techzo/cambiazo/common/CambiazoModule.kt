@@ -6,19 +6,23 @@ import com.techzo.cambiazo.data.local.AppDatabase
 import com.techzo.cambiazo.data.local.FavoriteProductDao
 import com.techzo.cambiazo.data.remote.auth.AuthService
 import com.techzo.cambiazo.data.remote.auth.UserService
+import com.techzo.cambiazo.data.remote.exchangelocker.ExchangeLockerService
 import com.techzo.cambiazo.data.remote.exchanges.ExchangeService
 import com.techzo.cambiazo.data.remote.location.DepartmentService
 import com.techzo.cambiazo.data.remote.location.DistrictService
 import com.techzo.cambiazo.data.remote.products.FavoriteProductService
 import com.techzo.cambiazo.data.remote.location.CountryService
+import com.techzo.cambiazo.data.remote.lockerlocation.LockerLocationService
 import com.techzo.cambiazo.data.remote.products.ProductCategoryService
 import com.techzo.cambiazo.data.remote.products.ProductService
 import com.techzo.cambiazo.data.remote.reviews.ReviewService
 import com.techzo.cambiazo.data.remote.subscriptions.SubscriptionService
 import com.techzo.cambiazo.data.repository.AuthRepository
+import com.techzo.cambiazo.data.repository.ExchangeLockerRepository
 import com.techzo.cambiazo.data.repository.ProductDetailsRepository
 import com.techzo.cambiazo.data.repository.ExchangeRepository
 import com.techzo.cambiazo.data.repository.LocationRepository
+import com.techzo.cambiazo.data.repository.LockerLocationRepository
 import com.techzo.cambiazo.data.repository.ProductCategoryRepository
 import com.techzo.cambiazo.data.repository.ProductRepository
 import com.techzo.cambiazo.data.repository.ReviewRepository
@@ -154,6 +158,18 @@ object CambiazoModule {
         return retrofit.create(SubscriptionService::class.java)
     }
 
+    @Provides
+    @Singleton
+    fun provideExchangeLockerService(retrofit: Retrofit): ExchangeLockerService {
+        return retrofit.create(ExchangeLockerService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLockerLocationService(retrofit: Retrofit): LockerLocationService {
+        return retrofit.create(LockerLocationService::class.java)
+    }
+
     // AQUI SOLO AGREGAR LOS PROVIDES DE LOS REPOSITORIOS
 
     @Provides
@@ -197,6 +213,18 @@ object CambiazoModule {
     @Singleton
     fun provideReviewRepository(service: ReviewService): ReviewRepository {
         return ReviewRepository(service)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLockerLocationRepository(service: LockerLocationService): LockerLocationRepository {
+        return LockerLocationRepository(service)
+    }
+
+    @Provides
+    @Singleton
+    fun provideExchangeLockerRepository(service: ExchangeLockerService): ExchangeLockerRepository {
+        return ExchangeLockerRepository(service)
     }
     
     @Provides
