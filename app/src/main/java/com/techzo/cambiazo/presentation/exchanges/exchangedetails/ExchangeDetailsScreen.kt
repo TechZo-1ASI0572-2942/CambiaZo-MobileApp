@@ -35,6 +35,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Apartment
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -186,9 +187,15 @@ fun ExchangeDetailsScreen(
             }
 
             val location= when (page) {
-                0 -> viewModel.getLocationString(exchange.productChange.districtId)
-                1 -> viewModel.getLocationString(exchange.productOwn.districtId)
-                else -> viewModel.getLocationString(exchange.productChange.districtId)
+                0 -> exchange.location?.address
+                1 -> exchange.location?.address
+                else -> exchange.location?.address
+            }
+
+            val locationLocker = when (page) {
+                0 -> exchange.location?.name
+                1 -> exchange.location?.name
+                else -> exchange.location?.name
             }
 
             val productImage= when (page) {
@@ -274,13 +281,13 @@ fun ExchangeDetailsScreen(
                         }
                         Text(
                             text = status,
-                            color = textColorStatus,
+                            color = Color.White,
                             modifier = Modifier
                                 .clip(RoundedCornerShape(50.dp))
                                 .background(textBackgroundColor)
                                 .padding(horizontal = 20.dp, vertical = 3.dp)
                                 .clickable {
-                                    if(page==2){
+                                    if(page==0){
                                         val formattedNumber = phoneNumber.replace("+", "").replace(" ", "")
                                         val url = "https://wa.me/$formattedNumber"
                                         val intent = Intent(Intent.ACTION_VIEW).apply {
@@ -329,16 +336,33 @@ fun ExchangeDetailsScreen(
                             Text(productName, fontWeight = FontWeight.Bold, fontSize = 26.sp)
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
+                                    imageVector = Icons.Filled.Apartment,
+                                    contentDescription = "Ubicación",
+                                    tint = Color(0xFFFFD146)
+                                )
+                                if (locationLocker != null) {
+                                    Text(
+                                        text = locationLocker,
+                                        color = Color(0xFF9F9C9C),
+                                        modifier = Modifier.padding(start = 1.dp)
+                                    )
+                                }
+                            }
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
                                     imageVector = Icons.Filled.LocationOn,
                                     contentDescription = "Ubicación",
                                     tint = Color(0xFFFFD146)
                                 )
-                                Text(
-                                    text = location,
-                                    color = Color(0xFF9F9C9C),
-                                    modifier = Modifier.padding(start = 1.dp)
-                                )
+                                if (location != null) {
+                                    Text(
+                                        text = location,
+                                        color = Color(0xFF9F9C9C),
+                                        modifier = Modifier.padding(start = 1.dp)
+                                    )
+                                }
                             }
+
                             Text(text = description, fontSize = 16.sp, lineHeight = 20.sp)
 
                             MyPopupDialog(
@@ -355,7 +379,7 @@ fun ExchangeDetailsScreen(
 
                 }
 
-                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 HorizontalDivider(
                     modifier = Modifier
@@ -366,6 +390,7 @@ fun ExchangeDetailsScreen(
 
                 Column(modifier = Modifier.padding(start = 15.dp, end = 15.dp)) {
                     BoxUnderExchange(textUnderImage2,productImage2, productName2, price2.toString(), page, exchangeId = exchange.id, goBack = {goBack(page)}, userAuthor = authorId, userReceptor = receptorId)
+
                     ButtonApp(
                         text = "Ver Locker",
                         onClick = {
@@ -789,7 +814,7 @@ fun BoxUnderExchange(textUnderImage:String, image:String, productName: String, p
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp)
-                .padding(bottom = 20.dp)
+                .padding(bottom = 0.dp)
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Text(textUnderImage, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, color = Color(0xFF6D6D6D))
