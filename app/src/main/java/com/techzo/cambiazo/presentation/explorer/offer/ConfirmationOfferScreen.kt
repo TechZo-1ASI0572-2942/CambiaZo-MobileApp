@@ -2,7 +2,10 @@ package com.techzo.cambiazo.presentation.explorer.offer
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Apartment
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -12,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -32,6 +36,7 @@ fun ConfirmationOfferScreen(
 ) {
     val desiredProduct by viewModel.desiredProduct.collectAsState()
     val offeredProduct by viewModel.offeredProduct.collectAsState()
+    val locationLocker by viewModel.locationLocker.collectAsState()
     val offerSuccess by viewModel.offerSuccess.collectAsState()
     val offerFailure by viewModel.offerFailure.collectAsState()
 
@@ -77,23 +82,89 @@ fun ConfirmationOfferScreen(
                     .padding(top = 10.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+
+
                 desiredProduct?.let { productLeft ->
                     offeredProduct?.let { productRight ->
+                        // Título antes de mostrar la ubicación
+                        Text(
+                            text = "Lugar del Intercambio:",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                        )
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Apartment,
+                                    contentDescription = "Ubicación de la Sede",
+                                    tint = Color(0xFFFFD146)
+                                )
+                                if (locationLocker != null) {
+                                    Text(
+                                        text = locationLocker?.name ?: "Sede no disponible",
+                                        color = Color(0xFF9F9C9C),
+                                        modifier = Modifier.padding(start = 6.dp)
+                                    )
+                                }
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.LocationOn,
+                                    contentDescription = "Ubicación de casillero",
+                                    tint = Color(0xFFFFD146)
+                                )
+                                if (locationLocker != null) {
+                                    Text(
+                                        text = locationLocker?.address ?: "Ubicación no disponible",
+                                        color = Color(0xFF9F9C9C),
+                                        modifier = Modifier.padding(start = 6.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // Título antes de mostrar la card
+                        Text(
+                            text = "Resumen de la Oferta:",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 8.dp)
+                        )
                         ArticleExchange(
                             productLeft = productLeft,
                             productRight = productRight,
                             modifier = Modifier.fillMaxWidth()
                         )
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        ButtonApp(
+                            text = "Listo",
+                            onClick = {
+                                viewModel.makeOffer()
+                            }
+                        )
+
                     }
                 }
-                Spacer(modifier = Modifier.height(10.dp))
-
-                ButtonApp(
-                    text = "Listo",
-                    onClick = {
-                        viewModel.makeOffer()
-                    }
-                )
 
                 offerSuccess.takeIf { it }?.let {
                     var showDialog by remember { mutableStateOf(true) }
@@ -110,6 +181,7 @@ fun ConfirmationOfferScreen(
                         )
                     }
                 }
+
                 offerFailure.takeIf { it }?.let {
                     var showDialog by remember { mutableStateOf(true) }
 

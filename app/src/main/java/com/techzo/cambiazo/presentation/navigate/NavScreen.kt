@@ -1,5 +1,6 @@
 package com.techzo.cambiazo.presentation.navigate
 
+import android.adservices.adid.AdId
 import android.net.Uri
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
@@ -41,6 +42,7 @@ import com.techzo.cambiazo.presentation.profile.favorites.FavoritesScreen
 import com.techzo.cambiazo.presentation.profile.myreviews.MyReviewsScreen
 import com.techzo.cambiazo.presentation.auth.register.SignUpScreen
 import com.techzo.cambiazo.presentation.auth.register.TyC.TermsAndConditionsScreen
+import com.techzo.cambiazo.presentation.explorer.offer.LocationLockerScreen
 import com.techzo.cambiazo.presentation.explorer.review.ReviewScreen
 import com.techzo.cambiazo.presentation.profile.offers.OffersScreen
 import com.techzo.cambiazo.presentation.profile.offers.offerdetails.OfferDetailsScreen
@@ -117,9 +119,14 @@ sealed class Routes(val route: String) {
             "MakeOfferScreen/$desiredProductId"
     }
 
-    object ConfirmationOffer : Routes("ConfirmationOfferScreen/{desiredProductId}/{offeredProductId}") {
-        fun createConfirmationOfferRoute(desiredProductId: String, offeredProductId: String) =
-            "ConfirmationOfferScreen/$desiredProductId/$offeredProductId"
+    object LocationLocker : Routes("LocationLockerScreen/{desiredProductId}/{offeredProductId}") {
+        fun createLocationLockerRoute(desiredProductId: String, offeredProductId: String) =
+            "LocationLockerScreen/$desiredProductId/$offeredProductId"
+    }
+
+    object ConfirmationOffer : Routes("ConfirmationOfferScreen/{desiredProductId}/{offeredProductId}/{locationId}") {
+        fun createConfirmationOfferRoute(desiredProductId: String, offeredProductId: String, locationId: String) =
+            "ConfirmationOfferScreen/$desiredProductId/$offeredProductId/$locationId"
     }
 
     object Payment : Routes("PaymentScreen/{planId}") {
@@ -436,6 +443,12 @@ fun NavScreen() {
 
         composable(route = Routes.MakeOffer.route) {
             MakeOfferScreen(
+                navController = navController
+            )
+        }
+
+        composable(route = Routes.LocationLocker.route) {
+            LocationLockerScreen(
                 navController = navController
             )
         }
