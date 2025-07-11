@@ -73,6 +73,11 @@ class ExchangeViewModel @Inject constructor(private val exchangeRepository: Exch
         }
     }
 
+    fun loadExchangeLocker(exchangeId: Int) {
+        getExchangeLocker(exchangeId)
+    }
+
+
     private fun getLocations(){
         viewModelScope.launch {
             _districts.value = locationRepository.getDistricts().data?: emptyList()
