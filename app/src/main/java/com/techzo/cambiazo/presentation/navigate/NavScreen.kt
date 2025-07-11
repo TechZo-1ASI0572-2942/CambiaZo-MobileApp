@@ -358,10 +358,7 @@ fun NavScreen() {
             val page = backStackEntry.arguments?.getString("page")?.toIntOrNull()
             if (exchange != null && page != null) {
                 OfferDetailsScreen(
-                    goBack = {page->
-                        navController.currentBackStackEntry?.savedStateHandle?.set("page", page)
-                        navController.navigate(Routes.Exchange.route)
-                    },
+                    back = { navController.popBackStack() },
                     goToReviewScreen = { userId ->
                         navController.navigate(Routes.Reviews.createRoute(userId.toString()))
                     },

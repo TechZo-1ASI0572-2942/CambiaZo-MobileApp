@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Apartment
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -49,15 +50,17 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.skydoves.landscapist.glide.GlideImage
 import com.techzo.cambiazo.common.Constants
+import com.techzo.cambiazo.common.components.ButtonIconHeaderApp
 import com.techzo.cambiazo.common.components.DialogApp
 import com.techzo.cambiazo.common.components.MainScaffoldApp
+import com.techzo.cambiazo.common.components.TextTitleHeaderApp
 import com.techzo.cambiazo.presentation.explorer.review.ReviewViewModel
 import com.techzo.cambiazo.presentation.profile.offers.OfferViewModel
 import com.techzo.cambiazo.ui.theme.ScreenBackground
 
 @Composable
 fun OfferDetailsScreen(
-    goBack: (Int) -> Unit,
+    back: () -> Unit = {},
     goToReviewScreen: (Int) -> Unit,
     viewModel: OfferViewModel = hiltViewModel(),
     exchangeId: Int,
@@ -81,7 +84,7 @@ fun OfferDetailsScreen(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                IconButton(onClick = { goBack(page) }) {
+                IconButton(onClick = { back() }) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", modifier = Modifier.size(35.dp))                }
 
                 Text(
@@ -334,7 +337,7 @@ fun OfferDetailsScreen(
                 )
 
                 Column(modifier = Modifier.padding(start = 15.dp, end = 15.dp)) {
-                    BoxUnderExchange(textUnderImage2,productImage2, productName2, price2.toString(), page, exchangeId = exchange.id, goBack = {goBack(page)}, userAuthor = authorId, userReceptor = receptorId)
+                    BoxUnderExchange(textUnderImage2,productImage2, productName2, price2.toString(), page, exchangeId = exchange.id, goBack = {back()}, userAuthor = authorId, userReceptor = receptorId)
 
                 }
             }
