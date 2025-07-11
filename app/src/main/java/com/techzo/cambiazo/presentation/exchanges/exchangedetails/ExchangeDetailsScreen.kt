@@ -420,9 +420,19 @@ fun LockerInfoSection(
                             color = Color(0xFFFFD146), // tu color principal
                             shape = RoundedCornerShape(50)
                         )
-                )
+                ){
+                    Text(
+                        text = tabTitles[selectedIndex],
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 5.dp, vertical = 8.dp),
+                        color = Color.Black,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
             },
-            divider = {} // quita la línea de abajo
+            divider = {}
         ) {
             tabs.forEachIndexed { index, tab ->
                 Tab(
@@ -433,7 +443,7 @@ fun LockerInfoSection(
                 ) {
                     Box(
                         modifier = Modifier
-                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                            .padding(horizontal = 14.dp, vertical = 8.dp)
                     ) {
                         Text(
                             text = tabTitles[index],
@@ -530,7 +540,6 @@ fun LockerRecogerSection(locker: ExchangeLocker?, exchange: Exchange) {
         }
     }
 }
-
 @Composable
 fun LockerInfoItem(title: String, value: String) {
     Column {
@@ -678,40 +687,6 @@ fun BoxUnderExchange(textUnderImage:String, image:String, productName: String, p
                         )
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        Button(onClick = {
-                            showDialog4 = true
-                        },
-                            modifier = Modifier.fillMaxWidth()
-                                .height(40.dp),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color.Red,
-                                contentColor = Color.White
-                            ),
-                            shape = RoundedCornerShape(10.dp))
-                        {
-                            Text(text = "Cancelar oferta",
-                                fontSize = 16.sp,
-                                style = MaterialTheme.typography.bodyLarge.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontFamily = FontFamily.SansSerif)
-                            )
-                        }
-                        if (showDialog4) {
-                            DialogApp(
-                                message = "¿Deseas cancelar esta oferta?",
-                                description = "Puedes cancelar esta oferta ahora y enviar otra más adelante si cambias de opinión.",
-                                labelButton1 = "Cancelar Oferta",
-                                labelButton2 = "Volver",
-                                onClickButton1 = {
-                                    viewModel.deleteExchange(exchangeId)
-                                    goBack()
-                                    showDialog4 = false
-                                },
-                                onClickButton2 = {
-                                    showDialog4 = false
-                                }
-                            )
-                        }
                     }
                 }
             }

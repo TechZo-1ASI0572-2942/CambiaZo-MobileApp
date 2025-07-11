@@ -98,7 +98,7 @@ fun ExchangeScreen(
                 }
                 when(index) {
                     0 -> viewModel.getAllExchanges()
-                    2 -> viewModel.getFinishedExchanges()
+                    1 -> viewModel.getFinishedExchanges()
                 }
             }
         )
@@ -139,13 +139,11 @@ fun ExchangeBox(exchange: Exchange, page: Int, goToDetailsScreen: (String, Strin
 
     val textUpperImage = when (page) {
         0 -> "Quieres"
-        1 -> "Quiere"
         else -> "Cambiaste"
     }
 
     val textUpperImage2 = when (page) {
         0 -> "Ofreces"
-        1 -> "Ofrece"
         else -> "Obtuviste"
     }
 

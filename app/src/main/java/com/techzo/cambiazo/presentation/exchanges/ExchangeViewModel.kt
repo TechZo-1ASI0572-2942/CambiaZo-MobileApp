@@ -69,7 +69,7 @@ class ExchangeViewModel @Inject constructor(private val exchangeRepository: Exch
     fun fetchExchanges(page:Int){
         when(page){
             0 -> getAllExchanges()
-            2 -> getFinishedExchanges()
+            1 -> getFinishedExchanges()
         }
     }
 
