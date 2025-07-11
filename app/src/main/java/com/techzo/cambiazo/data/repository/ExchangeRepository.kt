@@ -14,6 +14,23 @@ import kotlinx.coroutines.withContext
 
 class ExchangeRepository(private val exchangeService: ExchangeService
 ) {
+
+    suspend fun getAllExchanges(): Resource<List<Exchange>> = withContext(Dispatchers.IO) {
+        try {
+            val response = exchangeService.getAllExchanges()
+            if (response.isSuccessful) {
+                response.body()?.let { exchangesDto ->
+                    val exchanges = exchangesDto.map { it.toExchange() }
+                    return@withContext Resource.Success(data = exchanges)
+                }
+                return@withContext Resource.Error("No exchanges found")
+            }
+            return@withContext Resource.Error(response.message())
+        } catch (e: Exception) {
+            return@withContext Resource.Error(e.message ?: "An error occurred")
+        }
+    }
+
     suspend fun getExchangesByUserOwnId(userId: Int): Resource<List<Exchange>> =
         withContext(Dispatchers.IO) {
             try {

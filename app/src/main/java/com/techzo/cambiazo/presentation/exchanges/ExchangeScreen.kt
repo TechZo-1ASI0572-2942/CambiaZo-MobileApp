@@ -83,12 +83,12 @@ fun ExchangeScreen(
             Spacer(modifier = Modifier.height(30.dp))
         }) {
         val pagerState = rememberPagerState(
-            pageCount = { 3 }, initialPage = page
+            pageCount = { 2 }, initialPage = page
         )
 
         val coroutineScope = rememberCoroutineScope()
 
-        val itemTabs= listOf("Enviados", "Recibidos", "Completados")
+        val itemTabs= listOf("Pendientes", "Completados")
         CustomTabs(
             selectedTabIndex = pagerState.currentPage,
             itemTabs = itemTabs,
@@ -97,8 +97,7 @@ fun ExchangeScreen(
                     pagerState.animateScrollToPage(index)
                 }
                 when(index) {
-                    0 -> viewModel.getExchangesByUserOwnId()
-                    1 -> viewModel.getExchangesByUserChangeId()
+                    0 -> viewModel.getAllExchanges()
                     2 -> viewModel.getFinishedExchanges()
                 }
             }

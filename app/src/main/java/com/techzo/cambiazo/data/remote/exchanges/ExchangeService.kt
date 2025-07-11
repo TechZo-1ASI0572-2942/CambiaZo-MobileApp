@@ -39,5 +39,8 @@ interface ExchangeService {
     @DELETE("exchanges/delete/{exchangeId}")
     suspend fun deleteExchange(@Path("exchangeId") exchangeId: Int): Response<Void>
 
+    @GET("exchanges")
+    suspend fun getAllExchanges(): Response<List<ExchangeDto>>
+
 
 }

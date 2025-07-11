@@ -62,7 +62,6 @@ class ExchangeViewModel @Inject constructor(private val exchangeRepository: Exch
     fun fetchExchanges(page:Int){
         when(page){
             0 -> getExchangesByUserOwnId()
-            1 -> getExchangesByUserChangeId()
             2 -> getFinishedExchanges()
         }
     }
@@ -71,6 +70,34 @@ class ExchangeViewModel @Inject constructor(private val exchangeRepository: Exch
         viewModelScope.launch {
             _districts.value = locationRepository.getDistricts().data?: emptyList()
             _departments.value = locationRepository.getDepartments().data?: emptyList()
+        }
+    }
+
+    fun getAllExchanges() {
+        _state.value = UIState(isLoading = true)
+        viewModelScope.launch {
+            val result = exchangeRepository.getAllExchanges()
+            if (result is Resource.Success) {
+                val filteredData = result.data?.filter { exchange ->
+                    exchange.status == "Aceptado" && (exchange.userOwn.id == Constants.user!!.id || exchange.userChange.id == Constants.user!!.id)
+                }?.map { exchange ->
+                    if (exchange.userOwn.id == Constants.user!!.id) {
+                        exchange.copy(
+                            productOwn = exchange.productChange,
+                            productChange = exchange.productOwn,
+                            userOwn = exchange.userChange,
+                            userChange = exchange.userOwn
+                        )
+                    } else {
+                        exchange
+                    }
+                }
+
+
+                _state.value = UIState(data = filteredData)
+            } else {
+                _state.value = UIState(message = result.message ?: "Ocurrió un error")
+            }
         }
     }
 
